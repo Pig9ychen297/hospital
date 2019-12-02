@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou.mapper.MedicineMapper">
+	<select id="selectMedicineByCondition" resultType="Medicine" parameterType="Condition">
+		select * from medicine
+		<where>
+		<if test="m_name!=null and m_name!=''">
+			m_name like concat('%',#{m_name},'%')
+		</if>
+		<if test="m_type!=null and m_type!=''">
+			and m_type =#{m_type}
+		</if>
+		and	m_flag = 1
+	</where> 
+	</select>
+
+	<insert id="insertMedicine" parameterType="Medicine">
+		insert 
+		into medicine(m_number,m_image_addr,m_purchase,m_selling,m_name,m_type,
+		m_description,m_product_date,m_expiration_date,m_quality_date,m_detail,
+		m_productor,m_direction,m_total_purchase,m_residue,m_remark,m_state)
+		 values(#{m_number},#{m_image_addr},#{m_purchase},#{m_selling},#{m_name},#{m_type},
+		 #{m_description},#{m_product_date},#{m_expiration_date},#{m_quality_date},#{m_detail},
+		 #{m_productor},#{m_direction},#{m_total_purchase},#{m_residue},#{m_remark},#{m_state})
+	</insert>
+	
+	<select id="selectMedicineDetail" resultType="Medicine" parameterType="Integer">
+		select * from medicine where m_id=#{m_id}
+	</select>
+	
+	<select id="exportMedicine" resultType="Medicine" parameterType="java.util.List">
+		select * from medicine 
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="m_id" open="m_id in(" close=")" separator=",">
+						#{m_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+</mapper>

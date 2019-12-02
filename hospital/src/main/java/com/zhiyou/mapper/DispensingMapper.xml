@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou.mapper.DispensingMapper">
+<select id="selectDispensingByCondition" resultMap="rm1" parameterType="Condition">
+	select 
+		dispensing.*,registrationinfo.ri_name,medicine.m_name,doctor.d_name 
+	from 
+		dispensing 
+	left join medicine on dispensing.m_id =medicine.m_id 
+	left join registrationinfo on dispensing.ri_id =registrationinfo.ri_id 
+	left join doctor on registrationinfo.d_id=doctor.d_id
+		<where>
+			<if test="ri_no!=0 and ri_no!=null">
+				dispensing.ri_id = #{ri_no}
+			</if>
+			and di_flag = 1
+		</where> 
+	</select>
+	<resultMap id="rm1" type="Dispensing">
+		<id column="di_id" property="di_id"/>
+		<result column="di_counts" property="di_counts"/>
+		<result column="di_hascounts" property="di_hascounts"/>
+		<result column="di_notcounts" property="di_notcounts"/>
+		<result column="di_date" property="di_date"/>
+		<result column="ri_id" property="ri_id"/>
+		<association property="registrationinfor" javaType="Registrationinfor">
+			<result column="ri_name" property="ri_name"/>
+			<association property="doctor" javaType="Doctor">
+				<result column="d_name" property="d_name"/>
+			</association>
+		</association>
+		<association property="Medicine" javaType="Medicine">
+			<id column="m_id" property="m_id"/>
+			<result column="m_name" property="m_name"/>
+		</association>
+	</resultMap>
+	 <select id="selectDispensingByDi_id" parameterType="Integer" resultMap="rm1">
+		select d.*,m.m_name,r.ri_name from dispensing d left join medicine m on d.m_id = m.m_id left join registrationinfo r on d.ri_id = r.ri_id where di_id=#{di_id}
+	</select>
+	<update id="dispensing" parameterType="Condition">
+		update dispensing set di_hascounts = di_hascounts + #{num}, di_notcounts = di_notcounts - #{num} where di_id=#{di_id} 
+	</update>
+	
+	<select id="dispensingAll" parameterType="java.util.List" resultType="Registrationinfor">
+		SELECT ri_name FROM registrationinfo
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="ri_id" open="ri_id in(" close=")" separator=",">
+						#{ri_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+	<select id="searchAllMedicine" resultType="Medicine">
+		select m_id,m_name from medicine 
+	</select>
+	<insert id="addDispensing" parameterType="java.util.List">
+		 INSERT INTO dispensing(m_id,ri_id,di_counts,di_notcounts)VALUES 
+      	<foreach collection="dispensing_list" item="dispensing" separator=",">
+            (#{dispensing.m_id},#{dispensing.ri_id},#{dispensing.di_counts},#{dispensing.di_notcounts})
+        </foreach>
+	</insert>
+	
+	<select id="searchRepetitionInfo" parameterType="java.util.List" resultType="Dispensing">
+		select m_id,di_notcounts from dispensing
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="ri_id" open="ri_id in(" close=")" separator=",">
+						#{ri_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+	
+	<update id="updateDispensingByDi_id" parameterType="Integer">
+		update dispensing set di_flag = 0 where di_id = #{di_id}
+	</update>
+</mapper>

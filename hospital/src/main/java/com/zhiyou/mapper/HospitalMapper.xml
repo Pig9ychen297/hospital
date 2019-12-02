@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou.mapper.HospitalMapper">
+	<select id="selectHospitalByCondition" parameterType="Condition" resultMap="rm1"> 
+		SELECT h.*, re.ri_id, re.ri_name, re.ri_phone, d.d_name, de.de_name FROM hospitalinfo h LEFT JOIN registrationinfo re ON h.ri_id = re.ri_id  LEFT JOIN doctor d ON re.d_id = d.d_id LEFT JOIN department de ON d.de_id=de.de_id
+	<where>
+		<if test="ri_no!=null and ri_no!=''">
+			h.ri_id = #{ri_no}
+		</if>
+		<if test="d_name!=null and d_name!=''">
+			and d.d_name like concat('%',#{d_name},'%')
+		</if>
+		<if test="de_name!=null and de_name!=''">
+			and de.de_name like concat('%',#{de_name},'%')
+		</if>
+		<if test="beginTime != null and endTime != null">
+			and hi_date between #{beginTime} and #{endTime}
+		</if>
+		<if test="beginTime != null and endTime==null">
+			and hi_date > #{beginTime}
+		</if>
+		<if test="endTime != null and beginTime==null">
+			and hi_date <![CDATA[<]]> #{endTime}
+		</if>
+		and	hi_flag = 1
+	</where>
+	</select>
+	<resultMap type="Hospitalinfor" id="rm1">
+		<id column="hi_id" property="hi_id"/>
+		<result column="ri_id" property="ri_id"/>
+		<result column="hi_bedno" property="hi_bedno"/>
+		<result column="hi_cashpledge" property="hi_cashpledge"/>
+		<result column="hi_date" property="hi_date"/>
+		<result column="hi_state" property="hi_state"/>
+		<association property="registrationinfor" javaType="Registrationinfor" >
+			<id column="ri_id" property="ri_id"/>
+			<result column="ri_name" property="ri_name"/>
+			<result column="ri_phone" property="ri_phone"/>
+			<association property="doctor" javaType="Doctor">
+				<result column="d_name" property="d_name"/>
+				<association property="department" javaType="Department">
+					<result column="de_name" property="de_name"/>
+				</association>
+			</association>
+		</association>
+	</resultMap>
+	<insert id="insertHospital" parameterType="Hospitalinfor">
+		insert into hospitalinfo (hi_nurse,hi_bedno,hi_cashpledge,hi_illstate,ri_id) values(#{hi_nurse},#{hi_bedno},#{hi_cashpledge},#{hi_illstate},#{ri_id})
+	</insert>
+	<select id="searchHospitalInfoByhi_bedno" parameterType="Integer" resultType="Hospitalinfor">
+		select hi_id from hospitalinfo where hi_bedno = #{hi_bedno}
+	</select>
+	
+	<select id="selectHospitalDetail" parameterType="Integer" resultType="Hospitalinfor">
+		select * from hospitalinfo where hi_id=#{hi_id}
+	</select>
+
+	<update id="editHospital" parameterType="Hospitalinfor">
+		update hospitalinfo set hi_nurse=#{hi_nurse}, hi_bedno=#{hi_bedno},hi_cashpledge=#{hi_cashpledge},hi_illstate=#{hi_illstate} where hi_id=#{hi_id}
+	</update>
+	
+	<select id="exportHospital" parameterType="java.util.List" resultMap="rm1">
+		SELECT h.*, re.ri_id, re.ri_name, re.ri_phone, d.d_name, de.de_name FROM hospitalinfo h LEFT JOIN registrationinfo re ON h.ri_id = re.ri_id  LEFT JOIN doctor d ON re.d_id = d.d_id LEFT JOIN department de ON d.de_id=de.de_id
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="hi_id" open="hi_id in(" close=")" separator=",">
+						#{hi_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+</mapper>

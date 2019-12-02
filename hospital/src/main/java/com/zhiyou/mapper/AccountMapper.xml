@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhiyou.mapper.AccountMapper">
+	<select id="selectAccountByCondition" parameterType="Condition" resultMap="rm1">
+	SELECT a.ri_id,a.ac_pledge,a.ac_balance,a.ac_status,r.ri_name FROM account a LEFT JOIN registrationinfo r ON a.ri_id = r.ri_id
+	<where>
+		<if test="ri_no!=null and ri_no!=''">
+			ri_id = #{ri_id}
+		</if>
+		<if test="ri_name!=null and ri_name!=''">
+			and ri_name=#{ri_name}
+		</if>
+		and ac_flag=1
+	</where>
+	</select>
+	<resultMap type="Account" id="rm1">
+		<id column="ac_id" property="ac_id"/>
+		<result column="ac_pledge" property="ac_pledge"/>
+		<result column="ac_balance" property="ac_balance"/>
+		<result column="ac_status" property="ac_status"/>
+		<association property="registrationinfor" javaType="Registrationinfor">
+			<result column="ri_name" property="ri_name"/>
+		</association>
+	</resultMap>
+</mapper>	

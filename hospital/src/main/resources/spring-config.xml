@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+	<!-- spring整合Mybatis步骤1：配置数据库的连接
+	具有连接池数据源的，一般使用c3p0或者dbcp
+	这里需要指定一些属性：	
+		1、连接数据库的4大件
+		2、c3p0的属性
+	-->
+	<bean name="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="com.mysql.cj.jdbc.Driver"/>
+		<property name="jdbcUrl" value="jdbc:mysql://120.27.244.176:3306/hospital?serverTimezone=Asia/Shanghai"/>
+		<property name="user" value="root"/>
+		<property name="password" value="HBQ521521cf*"/>
+		<property name="maxPoolSize" value="20"/>
+		<property name="minPoolSize" value="5"/>
+	</bean>
+	<!-- spring整合Mybatis步骤2：配置SqlSessionFactory对象
+	这里需要指定一些属性：	
+		1、数据源对象
+		2、mybatis的配置文件的位置，
+			也可以不配置,将mybatis的配置文件的所有属性，在SqlSessionFactoryBean的属性中配置起来
+			一般不推荐，因为有些复杂属性还是配置在mybatis的配置文件中里比较直观。
+		3、mapping文件的位置
+			也可以不配置，第2步中如果引用使用mybatis的的配置文件
+	-->
+	<bean name="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+	</bean>
+	<!-- spring整合Mybatis步骤3：配置Mapper的代理对象 
+		这样会配置所有的mapper动态代理实现对象，过于复杂，推荐使用扫描
+	这里需要指定一些属性：	
+		1、对应的Mapper接口全名
+		2、SqlSessionFactory对象
+	<bean name="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="cn.com.bochy.mapper.UserMapper"/>
+		<property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+	</bean>
+	-->
+	
+	<!-- spring整合Mybatis步骤3：扫描Mapper的代理对象 
+		必须符合mapper开发的所有格式：Mybatis_04_Mapper
+	这里需要指定一些属性：	
+		1、mapper所在的包
+		2、SqlSessionFactory对象的名字，是一个字符串
+	-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.zhiyou.mapper"/>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+	</bean>
+	<!-- spring整合Mybatis步骤4：配置SqlSessionTemplate对象
+	这里需要指定一些属性：	
+		1、SqlSessionFactory对象
+	-->
+	<bean name="template" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"/>
+	</bean>  
+	<!-- spring整合Mybatis步骤5：配置DataSourceTransactionManager对象
+	这里需要指定一些属性：	
+		1、dataSource对象
+	-->
+	<bean name="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	<!-- spring整合Mybatis步骤5：使用xml完成事务的配置
+	-->
+	<aop:config>
+		<aop:pointcut id="trPointCut" expression="execution(public * com.zhiyou.service.impl.*.*(..))" />
+		<aop:advisor advice-ref="myTx" pointcut-ref="trPointCut" />
+	</aop:config>
+	<tx:advice id="myTx" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="delete*" read-only="false" isolation="SERIALIZABLE" propagation="REQUIRED"/>
+			<tx:method name="update*" read-only="false" isolation="SERIALIZABLE" propagation="REQUIRED"/>
+			<tx:method name="insert*" read-only="false" isolation="SERIALIZABLE" propagation="REQUIRED"/>
+			<tx:method name="select*" read-only="true" isolation="SERIALIZABLE" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+	<aop:aspectj-autoproxy proxy-target-class="true"/>  
+</beans>

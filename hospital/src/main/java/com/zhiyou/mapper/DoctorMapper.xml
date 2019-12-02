@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou.mapper.DoctorMapper">
+	<select id="selectDoctorByCondition" parameterType="Condition" resultMap="rm1">
+<!-- SELECT d.* FROM doctor d INNER JOIN department de ON d.de_id = de.de_id 
+	WHERE d_id=1 AND d_name LIKE CONCAT('%',"三",'%') AND de_name LIKE CONCAT('%',"科",'%')-->	
+ 	SELECT 
+		d_id,d_name,d_date,de_name	
+	FROM 
+		doctor d 
+	LEFT JOIN	
+		department de 
+	ON	
+		d.de_id = de.de_id
+ 	<where>
+		<if test="d_id!=null and d_id!=''">
+			d_id = #{d_id}
+		</if>
+		<if test="d_name!=null and d_name!=''">
+			and d_name like concat('%',#{d_name},'%')
+		</if>
+		<if test="de_name!=null and de_name!=''">
+			and de_name like concat('%',#{de_name},'%')
+		</if>
+		and	d_flag = 1
+	</where> 
+	</select>
+	<resultMap type="Doctor" id="rm1">
+		<id column="d_id" property="d_id"/>
+		<result column="d_name" property="d_name"/>
+		<result column="d_date" property="d_date"/>
+		<association property="department" javaType="Department">
+			<result column="de_name" property="de_name"/>
+		</association>
+	</resultMap>
+	<!-- 添加医生信息 -->
+	<!-- 对应数据库中的列 -->
+	<!-- <sql id="key">
+		<trim suffixOverrides=",">
+	    <if test="d_name!=null and d_name!=''">d_name,</if>
+	    <if test="d_id_type!=null and d_id_type!=''">d_id_type,</if>
+	    <if test="d_id_number!=null and d_id_number!=''">d_id_number,</if>
+	    <if test="d_tel!=null and d_tel!=''">d_tel,</if>
+	    <if test="d_plane!=null and d_plane!=''">d_plane,</if>
+	    <if test="d_sex!=null and d_sex!=''">d_sex,</if>
+	    <if test="d_date!=null and d_date!=''">d_date,</if>
+	    <if test="d_age!=null and d_age!=''">d_age,</if>
+	    <if test="d_mail!=null and d_mail!=''">d_mail,</if>
+	    <if test="de_id!=null and de_id!=''">de_id,</if>
+	    <if test="d_educ!=null and d_educ!=''">d_educ,</if>
+	    <if test="d_remark!=null and d_remark!=''">d_remark,</if>
+      </trim>
+	</sql>
+	对应实体类中的值
+	<sql id="values">
+		<trim suffixOverrides=",">
+		<if test="d_name!=null and d_name!=''">#{d_name},</if>
+	    <if test="d_id_type!=null and d_id_type!=''">#{d_id_type},</if>
+	    <if test="d_id_number!=null and d_id_number!=''">#{d_id_number},</if>
+	    <if test="d_tel!=null and d_tel!=''">#{d_tel},</if>
+	    <if test="d_plane!=null and d_plane!=''">#{d_plane},</if>
+	    <if test="d_sex!=null and d_sex!=''">#{d_sex},</if>
+	    <if test="d_date!=null and d_date!=''">#{d_date},</if>
+	    <if test="d_age!=null and d_age!=''">#{d_age},</if>
+	    <if test="d_mail!=null and d_mail!=''">#{d_mail},</if>
+	    <if test="de_id!=null and de_id!=''">#{de_id},</if>
+	    <if test="d_educ!=null and d_educ!=''">#{d_educ},</if>
+	    <if test="d_remark!=null and d_remark!=''">#{d_remark},</if>
+		</trim>
+	</sql>
+	<insert id="insertDoctor" parameterType="Doctor">
+		insert into doctor(<include refid="key"/>)values(<include refid="values"/>)
+	</insert> -->
+	<insert id="insertDoctor" parameterType="Doctor">
+		insert into doctor(d_name,d_id_type,d_id_number,d_tel,d_plane,d_sex,d_age,d_date,d_mail,de_id,d_educ,d_remark)
+		values(#{d_name},#{d_id_type},#{d_id_number},#{d_tel},#{d_plane},#{d_sex},#{d_age},#{d_date},#{d_mail},#{de_id},#{d_educ},#{d_remark})
+	</insert>
+	
+	<!-- //根据id查询doctor -->
+	<select id="selectDoctorDetail" parameterType="Integer" resultMap="rm2">
+		select d.*,de_name from doctor d LEFT JOIN department de on d.de_id=de.de_id where d_id = #{d_id}
+	</select>
+	<resultMap type="Doctor" id="rm2">
+		<id column="d_id" property="d_id"/>
+		<result column="d_name" property="d_name"/>
+		<result column="d_id_type" property="d_id_type"/>
+		<result column="d_id_number" property="d_id_number"/>
+		<result column="d_tel" property="d_tel"/>
+		<result column="d_plane" property="d_plane"/>
+		<result column="d_sex" property="d_sex"/>
+		<result column="d_date" property="d_date"/>
+		<result column="d_age" property="d_age"/>
+		<result column="d_mail" property="d_mail"/>
+		<result column="d_educ" property="d_educ"/>
+		<result column="d_remark" property="d_remark"/>
+		<association property="department" javaType="Department">
+			<result property="de_name" column="de_name"/>
+		</association>
+	</resultMap>
+	<update id="updateDoctor">
+		update doctor set d_name=#{d_name},d_id_type=#{d_id_type},d_id_number=#{d_id_number},d_tel=#{d_tel},d_plane=#{d_plane},
+		d_sex=#{d_sex},d_age=#{d_age},d_date=#{d_date},d_mail=#{d_mail},de_id=#{de_id},d_educ=#{d_educ},d_remark=#{d_remark} where d_id=#{d_id}
+	</update>
+	<select id="exportDoctor" parameterType="java.util.List" resultMap="rm2">
+		select d.*,de_name from doctor d LEFT JOIN department de on d.de_id=de.de_id
+		<where>
+			<choose>
+				<when test="list!=null and list.size!=0">
+					<foreach collection="list" item="d_id" open="d_id in(" close=")" separator=",">
+						#{d_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+
+</mapper>

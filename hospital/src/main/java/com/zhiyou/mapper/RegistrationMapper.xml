@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhiyou.mapper.RegistrationMapper">
+	<select id="selectRegistrationByCondition" parameterType="Condition" resultMap="rm1">		
+	SELECT r.ri_id, d.d_name, de.de_name, r.ri_date,r.ri_state FROM registrationinfo r LEFT JOIN doctor d on r.d_id=d.d_id LEFT JOIN department de ON d.de_id=de.de_id
+	<where>
+		<if test="ri_no!=null and ri_no!=''">
+			ri_id = #{ri_no}
+		</if>
+		<if test="d_name!=null and d_name!=''">
+			and d.d_name like concat('%',#{d_name},'%')
+		</if>
+		<if test="de_name!=null and de_name!=''">
+			and de.de_name like concat('%',#{de_name},'%')
+		</if>
+		<if test="beginTime != null and endTime != null">
+			and ri_date between #{beginTime} and #{endTime}
+		</if>
+		<if test="beginTime != null and endTime==null">
+			and ri_date > #{beginTime}
+		</if>
+		<if test="endTime != null and beginTime==null">
+			and ri_date <![CDATA[<]]> #{endTime}
+		</if>
+		and	ri_flag = 1
+	</where> 
+	</select>
+	<resultMap type="Registrationinfor" id="rm1">
+		<id column="ri_id" property="ri_id"/>
+		<result column="ri_date" property="ri_date"/>
+		<result column="ri_state" property="ri_state"/>
+		<association property="doctor" javaType="Doctor" >
+			<result column="d_name" property="d_name"/>
+			<association property="department" javaType="Department">
+				<result column="de_name" property="de_name"/>
+			</association>
+		</association>
+	</resultMap>
+	
+	<select id="searchAllDepartment" resultType="Department">
+		select de_id,de_name from department 
+	</select>
+	<!-- <resultMap type="Department" id="rm2" >
+		<collection property="doctorList" ofType="Doctor" column="de_id" select="searchDoctorByde_id"/>
+	</resultMap>
+	<select id="searchDoctorByde_id" resultType="Doctor">
+		select d.d_name from doctor d INNER JOIN department de ON d.de_id = de.de_id
+	</select> -->
+	<!-- 查询医生列表 -->
+	<select id="searchDoctorByDe_id" resultType="Doctor" parameterType="Integer">
+		select d_id,d_name from doctor where de_id = #{de_id}
+	</select>
+	<insert id="insertRegistration" parameterType="Registrationinfor" >
+		insert into registrationinfo (ri_name,ri_identytype,ri_idnum,ri_socialnum,ri_phone,ri_selef_paying,ri_sex,ri_age,ri_career,ri_first_visit,d_id,ri_remark)values(#{ri_name},#{ri_identytype},#{ri_idnum},#{ri_socialnum},#{ri_phone},#{ri_selef_paying},#{ri_sex},#{ri_age},#{ri_career},#{ri_first_visit},#{d_id},#{ri_remark})
+	</insert>
+	<select id="selectRegistrationDetail" resultMap="rm2" parameterType="Integer">
+		select r.*,d.d_name,de.de_name from registrationinfo r LEFT JOIN doctor d on r.d_id=d.d_id LEFT JOIN department de ON d.de_id = de.de_id where r.ri_id = #{ri_id}
+	</select>
+	<resultMap type="Registrationinfor" id="rm2">
+		<id column="ri_id" property="ri_id"/>
+		<result column="ri_name" property="ri_name"/>
+		<result column="ri_identytype" property="ri_identytype"/>
+		<result column="ri_idnum" property="ri_idnum"/>
+		<result column="ri_socialnum" property="ri_socialnum"/>
+		<result column="ri_phone" property="ri_phone"/>
+		<result column="ri_selef_paying" property="ri_selef_paying"/>
+		<result column="ri_sex" property="ri_sex"/>
+		<result column="ri_age" property="ri_age"/>
+		<result column="ri_career" property="ri_career"/>
+		<result column="ri_date" property="ri_date"/>
+		<result column="ri_state" property="ri_state"/>
+		<result column="ri_first_visit" property="ri_first_visit"/>
+		<result column="ri_remark" property="ri_remark"/>
+		<association property="doctor" javaType="Doctor">
+			<result column="d_name" property="d_name"/>
+			<association property="department" javaType="Department">
+				<result column="de_name" property="de_name"/>
+			</association>
+		</association>
+	</resultMap>
+	
+	<update id="updateRegistration" parameterType="Registrationinfor">
+		update registrationinfo set 
+		ri_name=#{ri_name},ri_socialnum=#{ri_socialnum},
+		ri_identytype=#{ri_identytype},ri_idnum=#{ri_idnum},
+		ri_phone=#{ri_phone},ri_selef_paying=#{ri_selef_paying},
+		ri_sex=#{ri_sex},ri_age=#{ri_age},
+		ri_career=#{ri_career},ri_first_visit=#{ri_first_visit},
+		ri_remark=#{ri_remark},d_id=#{d_id} where ri_id=#{ri_id}
+	</update>
+	
+	<select id="exportRegistration" parameterType="java.util.List" resultMap="rm2">
+		select r.*,d.d_name,de.de_name from registrationinfo r LEFT JOIN doctor d on r.d_id=d.d_id LEFT JOIN department de ON d.de_id = de.de_id 
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="ri_id" open="ri_id in(" close=")" separator=",">
+						#{ri_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+	
+	<update id="quitNumber" parameterType="java.util.List">
+		update registrationinfo set ri_state = '已退号'
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="ri_id" open="ri_id in(" close=")" separator=",">
+						#{ri_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</update>
+	
+	<!-- 判断是否重复退号 -->
+	<select id="searchRepetition" resultType="Registrationinfor" parameterType="java.util.List">
+		select ri_state from registrationinfo
+		<where>
+			<choose>
+				<when test="list!=null and list!=''">
+					<foreach collection="list" item="ri_id" open="ri_id in(" close=")" separator=",">
+						#{ri_id}
+					</foreach>
+				</when>
+			</choose>
+		</where>
+	</select>
+</mapper>

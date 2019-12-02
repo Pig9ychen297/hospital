@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<!-- 打开延迟加载的开关 -->
+        <setting name="lazyLoadingEnabled" value="true" />
+        <!-- 将积极加载改为消极加载即按需要加载 -->
+        <setting name="aggressiveLazyLoading" value="false" />
+       <setting name="logImpl" value="STDOUT_LOGGING" />  
+	</settings>
+	<!-- 给实体类增加别名 -->
+	<typeAliases>
+		<typeAlias type="com.zhiyou.pojo.User" alias="User"/>
+		<typeAlias type="com.zhiyou.pojo.Doctor" alias="Doctor"/>
+		<typeAlias type="com.zhiyou.pojo.Department" alias="Department"/>
+		<typeAlias type="com.zhiyou.pojo.Condition" alias="Condition"/>
+		<typeAlias type="com.zhiyou.pojo.Medicine" alias="Medicine"/>
+		<typeAlias type="com.zhiyou.pojo.Registrationinfor" alias="Registrationinfor"/>
+		<typeAlias type="com.zhiyou.pojo.Hospitalinfor" alias="Hospitalinfor"/>
+		<typeAlias type="com.zhiyou.pojo.Chargemanage" alias="Chargemanage"/>
+		<typeAlias type="com.zhiyou.pojo.Chargeitem" alias="Chargeitem"/>
+		<typeAlias type="com.zhiyou.pojo.Dispensing" alias="Dispensing"/>
+		<typeAlias type="com.zhiyou.pojo.Account" alias="Account"/>
+		
+		
+	</typeAliases>
+	<plugins>
+		<!-- com.github.pagehelper为PageHelper类所在包名 -->
+		<plugin interceptor="com.github.pagehelper.PageHelper">
+			<!-- 数据库方言 -->
+			<property name="dialect" value="mysql" />
+			<!-- 该参数默认为false -->
+			<!-- 设置为true时，会将RowBounds第一个参数offset当成pageNum页码使用 -->
+			<!-- 和startPage中的pageNum效果一样 -->
+			<property name="offsetAsPageNum" value="true" />
+			<!-- 该参数默认为false -->
+			<!-- 设置为true时，使用RowBounds分页会进行count查询 -->
+			<property name="rowBoundsWithCount" value="true" />
+			<!-- 设置为true时，如果pageSize=0或者RowBounds.limit = 0就会查询出全部的结果 -->
+			<!-- （相当于没有执行分页查询，但是返回结果仍然是Page类型） -->
+			<property name="pageSizeZero" value="true" />
+			<!-- 3.3.0版本可用 - 分页参数合理化，默认false禁用 -->
+			<!-- 启用合理化时，如果pageNum<1会查询第一页，如果pageNum>pages会查询最后一页 -->
+			<!-- 禁用合理化时，如果pageNum<1或pageNum>pages会返回空数据 -->
+			<property name="reasonable" value="true" />
+		</plugin>
+	</plugins>
+
+</configuration>
