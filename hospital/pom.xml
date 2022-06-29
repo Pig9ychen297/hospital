@@ -30,7 +30,7 @@
 		
 		<tomcat-servlet-api.version>7.0.62</tomcat-servlet-api.version>
 		
-		<poi.version>3.17</poi.version>
+		<poi.version>4.1.1</poi.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.7</maven.compiler.source>
 		<maven.compiler.target>1.7</maven.compiler.target>
